@@ -1,21 +1,18 @@
+import itertools
+
 def makeSplittingList(l):
     # input list of doubles as (number hydrogens, coupling constant in hz)
     # output list of doubles as (relative coordinate, peak height)
     # produces a first-order coupling tree centered at zero with ratios of heights
 
 	splits = []
-	for h, j in l:
-		splits.extend(j for i in range(h))
-
-	coordinates = [0]
-	for j in splits:
-		nc = []
-		for coordinate in coordinates:
-			nc.extend(rangeList(coordinate - j / 2.0, coordinate + j / 2.0, j))
-		coordinates = nc
+	for num_hydrogen, j in l:
+		splits.extend(j for i in range(num_hydrogen))
+	
+	shifts = reduce(lambda shifts, j: list(itertools.chain(*[rangeList(shift - j / 2.0, shift + j / 2.0, j) for shift in shifts])), splits, [0])
 
 	answer = {}
-	for s in coordinates:
+	for s in shifts:
 			answer[s] = 1 if s not in answer else answer[s] + 1
 
 	return answer
