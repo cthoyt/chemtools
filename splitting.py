@@ -7,7 +7,7 @@ def makeSplittingList(l):
 
 	splits = []
 	for num_hydrogen, j in l:
-		splits.extend(j for i in range(num_hydrogen))
+		splits.extend(j for i in xrange(num_hydrogen))
 	
 	shifts = reduce(lambda shifts, j: list(itertools.chain(*[rangeList(shift - j / 2.0, shift + j / 2.0, j) for shift in shifts])), splits, [0])
 
@@ -30,11 +30,9 @@ def test_makeSplittingList():
 		assert makeSplittingList(test) == result
 
 def rangeList(start, stop, step):
-	l = []
 	while start <= stop:
-		l.append(start)
+		yield start
 		start += step
-	return l
 
 def test_rangeList():
 	test1 = (0, 3, 1, [0, 1, 2, 3])
@@ -42,7 +40,7 @@ def test_rangeList():
 	test3 = (-7.5, 7.5, 5, [-7.5, -2.5, 2.5, 7.5])
 	data = [test1, test2, test3]
 	for start, stop, step, result in data:
-		assert rangeList(start, stop, step) == result
+		assert list(rangeList(start, stop, step)) == result
 
 test_rangeList()
 test_makeSplittingList()
