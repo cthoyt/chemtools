@@ -29,7 +29,7 @@ def test_makeSplittingList():
 	test5 = ([(3, 4)], {-6: 1, -2: 3, 2: 3, 6: 1})
 	test6 = ([(3, 5)], {-7.5: 1, -2.5: 3, 2.5: 3, 7.5: 1})
 	test7 = ([(1, 4), (1, 2)], {-3: 1, -1: 1, 1: 1, 3: 1})
-	test8 = ([(1, 8), (1, 4), (1,2)], {key: 1 for key in rangeList(-7.0,7.0,2.0)})
+	test8 = ([(1, 8), (1, 4), (1, 2)], {key: 1 for key in rangeList(-7.0, 7.0, 2.0)})
 	data = [test1, test2, test3, test4, test5, test6, test7, test8]
 	for test, result in data:
 		assert makeSplittingList(test) == result
@@ -49,3 +49,11 @@ def test_rangeList():
 
 test_rangeList()
 test_makeSplittingList()
+
+n = []
+for i in xrange(input("number of splits? ")):
+	h = input("hydrogens on split #" + str(i + 1) + "? ")
+	j = input("coupling constant for split #" + str(i + 1) + "? ")
+	n.append((h, j))
+
+print(makeSplittingList(n))
