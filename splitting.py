@@ -71,13 +71,13 @@ def getSplitsFromUser():
 
 def readSplitsFromFile(fname):
 	with open(fname) as f:
-		return [(float(h), float(j)) for h, j in [string.split(line.strip(), ",") for line in f]]
+		return [(int(h), float(j)) for h, j in [string.split(line.strip(), ",") for line in f]]
 
 # ## BEGIN SCRIPT
 
 test_rangeList()
 test_makeSplittingList()
 
-n = getSplitsFromUser()
+n = readSplitsFromFile(input("filename? "))
 print(prepTex(makeSplittingList(n), str(n)))
 
