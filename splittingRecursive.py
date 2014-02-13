@@ -66,9 +66,9 @@ def prepareSplittingTex(tree):
 	for level in xrange(1, len(tree) - 1):
 		for i in xrange(len(tree[level])):
             
-		parent_index = tree[level][i][1]
-		relativeX = tree[level][i][0]
-		cartesianCoordinate = (relativeX * scaleX, level * levelScaleY)
+			parent_index = tree[level][i][1]
+			relativeX = tree[level][i][0]
+			cartesianCoordinate = (relativeX * scaleX, level * levelScaleY)
             
 			tree[level][i] = (coordinateNumber, parent_index, cartesianCoordinate)
 			
