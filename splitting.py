@@ -2,7 +2,7 @@
  
 import itertools
 import string
-from subprocess import call
+import subprocess
 import sys
 
 def makeSplittingList(l):
