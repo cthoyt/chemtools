@@ -1,8 +1,8 @@
 import itertools
 import string
 from subprocess import call
+import subprocess
 import sys
-
 
 def makeSplittingList(l):
     # input list of doubles as (number hydrogens, coupling constant in hz)
@@ -84,7 +84,7 @@ test_makeSplittingList()
 if len(sys.argv) == 3:
 	n = readSplitsFromFile(sys.argv[1])
 	strToFile(prepTex(makeSplittingList(n), str(n)), sys.argv[2])
-	if subprocess.check_call(["which", "pdflatex"]) == 0:
+	if subprocess.call(["which", "pdflatex"]) == 0:
 		subprocess.call(["pdflatex", sys.argv[2]])
 	else:
 		print "Missing pdflatex!\nNo pdf produced!\nRaw LaTeX output at:", sys.argv[2]
