@@ -9,7 +9,7 @@ def makeSplittingList(l):
 	# count the number of each type of splitting
 	splits = []
 	for num_hydrogen, j in l:
-		splits.extend(j for i in xrange(num_hydrogen))
+		splits.extend(j for i in rangeList(1, num_hydrogen, 1))
 
 	# challenge: recursive implementation (because why not)
 	# populate a list of the locations of each split
