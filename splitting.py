@@ -81,5 +81,5 @@ for i in xrange(input("number of splits? ")):
 	j = input("coupling constant for split #" + str(i + 1) + "? ")
 	n.append((h, j))
 
-prepTex(makeSplittingList(n))
+print(prepTex(makeSplittingList(n)))
 
