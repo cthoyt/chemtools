@@ -52,11 +52,10 @@ def prepTex(l, caption):
 	# output TeX string
 
 	width = 0.3
-	texStr = "\\documentclass[]{article}\n\n\\usepackage{tikz}\n\\usepackage[margin=1in]{geometry}\n\n\\begin{document}\n\n\\begin{figure}\n\t\\centering\n\t\\begin{tikzpicture}[x=" + str(width) + "cm]"
+	texStr = "\\documentclass[]{article}\n\n\\usepackage{tikz}\n\\usepackage[margin=1in]{geometry}\n\n\\begin{document}\n\n\\begin{figure}\n\t\\centering\n\t\\begin{tikzpicture}[x=" + str(width) + "cm]\n"
 
-	# the x= parameter will have to change depending on how wide your spectrum will be. Probably have to do that programattically somehow, but idk how right now. Otherwise your picture will go off the page
 	for shift, height in l.iteritems():
-		texStr += "\t\t\\draw (" + str(shift) + "," + str(height) + ") -- (" + str(shift) + ", 0) ;"
+		texStr += "\t\t\\draw (" + str(shift) + "," + str(height) + ") -- (" + str(shift) + ", 0) ;\n"
 
 	texStr += "\t\\end{tikzpicture}\n\t\\caption{" + caption + "}\n\\end{figure}\n\n\\end{document}"
 	return texStr
@@ -66,17 +65,19 @@ def strToFile(str, fname):
 	f.write(str)
 	f.close()
 
-# ## BEGIN SCRIPT
+def getSplitsFromUser():
+	return [(input("hydrogens on split #" + str(i + 1) + "? "), input("coupling constant for split #" + str(i + 1) + "? ")) for i in xrange(input("number of splits? "))]
 
+def readSplitsFromFile(fname):
+	with open(fname) as f:
+		splits = [split(line, ",") for line in f]
+	return splits
+
+# ## BEGIN SCRIPT
 
 test_rangeList()
 test_makeSplittingList()
 
-n = []
-for i in xrange(input("number of splits? ")):
-	h = input("hydrogens on split #" + str(i + 1) + "? ")
-	j = input("coupling constant for split #" + str(i + 1) + "? ")
-	n.append((h, j))
-
+n = getSplitsFromUser()
 print(prepTex(makeSplittingList(n), str(n)))
 
