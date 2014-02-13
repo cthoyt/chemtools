@@ -35,15 +35,56 @@ def splitter(l):
 		# sorted(tree[level + 1], key = lambda el: el[0])
 	return tree
 
-def postProcessTree(tree):
-	for level in range(1, len(tree) - 1):
-		for i in range(len(tree[level])):
+def extractPatternFromTree(tree):
+	for level in xrange(1, len(tree) - 1):
+		for i in xrange(len(tree[level])):
 			parent = tree[level][i][1]
 			tree[level][i] = (tree[level][i][0], tree[level][i][1], tree[level][i][2] * tree[level - 1][parent][2])
-	return tree
-
-def extractPatternFromTree(tree):
 	return {key:value for key, drop, value in tree[len(tree) - 1]}
+
+def prepareResonanceTex(patternTree):
+	pass
+
+def prepareSplittingTex(tree):
+    #in relative units
+    height = 1100
+    width = 850
+    verticalPadding = 5
+    horizontalPadding = 5
+    
+    scaleX = 1
+    levelScaleY = 1
+    
+    
+    #dottedLineCommands = []
+    #solidLineCommands = []
+    #drawPointCommands = []
+    
+    coordinateNumber = 1
+    for level in xrange(1, len(tree) - 1):
+		for i in xrange(len(tree[level])):
+            
+            parent_index = tree[level][i][1]
+            relativeX = tree[level][i][0]
+            cartesianCoordinate = (relativeX * scaleX, level * levelScaleY)
+            
+			tree[level][i] = (coordinateNumber, parent_index, cartesianCoordinate)
+			
+			#draw and label current point
+			#draw solid line from (x,y) = tree[level - 1][parent_index][0] to (x, y + 3/5 * levelScaleY)
+			#if last line (level = len(tree) - 1, draw longer tail
+			
+			#draw dotted line from (x, y + 3/5 * levelScaleY) if (x,y) = tree[level - 1][parent_index][0] i.e. coordinate number to current coordinate number
+			
+			coordinateNumber += 1
+
+    return tree
+
+def prepareTexHeader():
+    pass
+
+def prepareTexFooter():
+    pass
 
 def testProcess():
 	test1 = ([(1, 5)], {-2.5: 1, 2.5: 1})
@@ -56,11 +97,10 @@ def testProcess():
 	test8 = ([(1, 8), (1, 4), (1, 2)], {key: 1 for key in rangeList(-7.0, 7.0, 2.0)})
 	data = [test1, test2, test3, test4, test5, test6, test7, test8]
 	for test, result in data:
- 		assert extractPatternFromTree(postProcessTree(splitter(test))) == result
+ 		assert extractPatternFromTree(splitter(test)) == result
 
 testProcess()
 
 tree = splitter([(1, 8), (1, 4), (1, 2)])
 print(tree)
-print(postProcessTree(tree))
-print(extractPatternFromTree(postProcessTree(tree)))
+print(extractPatternFromTree(tree))
