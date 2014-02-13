@@ -56,9 +56,9 @@ def prepareSplittingTex(tree):
     levelScaleY = 1
     
     
-    #dottedLineCommands = []
-    #solidLineCommands = []
-    #drawPointCommands = []
+    dottedLineCommands = []
+    solidLineCommands = []
+    drawPointCommands = []
     
     coordinateNumber = 1
     for level in xrange(1, len(tree) - 1):
@@ -77,8 +77,13 @@ def prepareSplittingTex(tree):
 			#draw dotted line from (x, y + 3/5 * levelScaleY) if (x,y) = tree[level - 1][parent_index][0] i.e. coordinate number to current coordinate number
 			
 			coordinateNumber += 1
-
-    return tree
+			
+			
+	points = string.join(drawPointCommands, "\n")
+	solids = string.join(solidLineCommands, "\n")
+	dotted = string.join(solidLineCommands, "\n")
+	
+	return points + "\n\n" + solids + "\n\n" + dotted
 
 def prepareTexHeader():
     pass
