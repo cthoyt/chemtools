@@ -52,9 +52,11 @@ def prepareSplittingTex(tree):
 	verticalPadding = 5
 	horizontalPadding = 5
     
+    
+    	#todo: calculate these based on height/width/padding 
 	scaleX = 1
 	levelScaleY = 1
-    
+	frac_split = .7
     
 	dottedLineCommands = []
 	solidLineCommands = []
@@ -70,11 +72,12 @@ def prepareSplittingTex(tree):
             
 			tree[level][i] = (coordinateNumber, parent_index, cartesianCoordinate)
 			
+			#todo:
 			#draw and label current point
-			#draw solid line from (x,y) = tree[level - 1][parent_index][0] to (x, y + 3/5 * levelScaleY)
+			#draw solid line from (x,y) = tree[level - 1][parent_index][0] to (x, y + frac_split * levelScaleY)
 			#if last line (level = len(tree) - 1, draw longer tail
 			
-			#draw dotted line from (x, y + 3/5 * levelScaleY) if (x,y) = tree[level - 1][parent_index][0] i.e. coordinate number to current coordinate number
+			#draw dotted line from (x, y + frac_split * levelScaleY) if (x,y) = tree[level - 1][parent_index][0] i.e. coordinate number to current coordinate number
 			
 			coordinateNumber += 1
 			
