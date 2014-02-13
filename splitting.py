@@ -1,4 +1,5 @@
 import itertools
+import string
 
 def makeSplittingList(l):
     # input list of doubles as (number hydrogens, coupling constant in hz)
@@ -70,7 +71,7 @@ def getSplitsFromUser():
 
 def readSplitsFromFile(fname):
 	with open(fname) as f:
-		splits = [split(line, ",") for line in f]
+		splits = [string.split(line, ",") for line in f]
 	return splits
 
 # ## BEGIN SCRIPT
