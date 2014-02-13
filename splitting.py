@@ -1,5 +1,5 @@
 #!/usr/bin/python
- 
+
 import itertools
 import string
 import subprocess
@@ -9,6 +9,9 @@ def makeSplittingList(l):
     # input list of doubles as (number hydrogens, coupling constant in hz)
     # output list of doubles as (relative coordinate, peak height)
     # produces a first-order coupling tree centered at zero with ratios of heights
+
+	# reverses the list ordered by hz for future use
+	l = sorted(l, key = lambda entry: entry[1])[::-1]
 
 	# count the number of each type of splitting
 	splits = []
@@ -89,7 +92,7 @@ if len(sys.argv) == 3:
 		subprocess.call(["pdflatex", sys.argv[2]])
 	else:
 		print "Missing pdflatex!\nNo pdf produced!\nRaw LaTeX output at:", sys.argv[2]
-	
+
 else:
 	n = getSplitsFromUser()
 	strToFile(prepTex(makeSplittingList(n), str(n)), input("output file name?"))
