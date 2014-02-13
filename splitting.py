@@ -1,6 +1,6 @@
 import itertools
 
-def makeSplittingList(l):
+def prepSplittingList(l):
     # input list of doubles as (number hydrogens, coupling constant in hz)
     # output list of doubles as (relative coordinate, peak height)
     # produces a first-order coupling tree centered at zero with ratios of heights
@@ -47,6 +47,31 @@ def test_rangeList():
 	for start, stop, step, result in data:
 		assert list(rangeList(start, stop, step)) == result
 
+def prepTex(l):
+	#input a splitting list
+
+	texStr = "\\documentclass[]{article}\n\n\\usepackage{tikz}\n\\usepackage[margin=1in]{geometry}\n\n\\begin{document}\n\n\\begin{figure}\n\t\\centering\n\t\\begin{tikzpicture}[x=0.3cm]"
+
+	# the x= parameter will have to change depending on how wide your spectrum will be. Probably have to do that programattically somehow, but idk how right now. Otherwise your picture will go off the page
+	for shift, height in l:
+		texStr += "\t\t\\draw (" + str(shift) "," + str(height) + ") -- (" + str(shift) ", 0) ;"
+
+	# need to insert here the way to call arguments so it says what splitting rules were used, probably from arguments when we implement that
+
+	texStr += "\t\\end{tikzpicture}\n\t\\caption{"
+	texStr += str(output)
+	texStr += "}\n\\end{figure}\n\n\\end{document}"
+	return texStr
+
+def writeTex(str, fname):
+	f = open(fname, 'w')
+	f.write(str)
+	f.close()
+
+
+### BEGIN SCRIPT
+
+
 test_rangeList()
 test_makeSplittingList()
 
@@ -56,4 +81,5 @@ for i in xrange(input("number of splits? ")):
 	j = input("coupling constant for split #" + str(i + 1) + "? ")
 	n.append((h, j))
 
-print(makeSplittingList(n))
+prepTex(makeSplittingList(n))
+
