@@ -58,9 +58,8 @@ def prepareSplittingTex(tree):
 	levelScaleY = 1
 	frac_split = .7
     
-	dottedLineCommands = []
-	solidLineCommands = []
-	drawPointCommands = []
+	solidCommands = []
+	dottedCommands = []
     
 	coordinateNumber = 1
 	for level in xrange(1, len(tree) - 1):
@@ -72,17 +71,24 @@ def prepareSplittingTex(tree):
             
 			tree[level][i] = (coordinateNumber, parent_index, cartesianCoordinate)
 			
-			#todo:
-			#draw and label current point
-			#draw solid line from (x,y) = tree[level - 1][parent_index][0] to (x, y + frac_split * levelScaleY)
-			#if last line (level = len(tree) - 1, draw longer tail
+			a = tree[level - 1][parent_index][0]
+			b = (a[0], a[1] + frac_split * levelScaleY)
+			c = tree[level - 1][parent_index][0]
 			
-			#draw dotted line from (x, y + frac_split * levelScaleY) if (x,y) = tree[level - 1][parent_index][0] i.e. coordinate number to current coordinate number
+			#if last line (level = len(tree) - 1, draw longer tail
+			if level == len(tree):
+				b = (a[0], a[1] + levelScaleY
+			
+			#draw solid line from (x,y) = tree[level - 1][parent_index][0] to (x, y + frac_split * levelScaleY)
+			solidCommands.append("\draw " + str(a) + " -- " + str(b) + " ;")
+			
+			#draw dotted line from (x, y + frac_split * levelScaleY) if (x,y) = tree[level - 1][parent_index][0] i.e. 
+			##coordinate number to current coordinate number
+			dottedCommands.append("\draw [dotted] " + str(b) " -- " + str(c) + " ;")
 			
 			coordinateNumber += 1
 			
 			
-	points = string.join(drawPointCommands, "\n")
 	solids = string.join(solidLineCommands, "\n")
 	dotted = string.join(solidLineCommands, "\n")
 	
