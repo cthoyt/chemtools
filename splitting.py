@@ -71,8 +71,7 @@ def getSplitsFromUser():
 
 def readSplitsFromFile(fname):
 	with open(fname) as f:
-		splits = [string.split(line, ",") for line in f]
-	return splits
+		return [(float(h),float(j) for h, j in [string.split(line.strip(), ",") for line in f]]
 
 # ## BEGIN SCRIPT
 
