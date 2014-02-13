@@ -1,6 +1,6 @@
 import itertools
 
-def prepSplittingList(l):
+def makeSplittingList(l):
     # input list of doubles as (number hydrogens, coupling constant in hz)
     # output list of doubles as (relative coordinate, peak height)
     # produces a first-order coupling tree centered at zero with ratios of heights
@@ -47,29 +47,26 @@ def test_rangeList():
 	for start, stop, step, result in data:
 		assert list(rangeList(start, stop, step)) == result
 
-def prepTex(l):
-	#input a splitting list
+def prepTex(l, caption):
+	# input a splitting dictionary
+	# output TeX string
 
-	texStr = "\\documentclass[]{article}\n\n\\usepackage{tikz}\n\\usepackage[margin=1in]{geometry}\n\n\\begin{document}\n\n\\begin{figure}\n\t\\centering\n\t\\begin{tikzpicture}[x=0.3cm]"
+	width = 0.3
+	texStr = "\\documentclass[]{article}\n\n\\usepackage{tikz}\n\\usepackage[margin=1in]{geometry}\n\n\\begin{document}\n\n\\begin{figure}\n\t\\centering\n\t\\begin{tikzpicture}[x=" + str(width) + "cm]"
 
 	# the x= parameter will have to change depending on how wide your spectrum will be. Probably have to do that programattically somehow, but idk how right now. Otherwise your picture will go off the page
-	for shift, height in l:
-		texStr += "\t\t\\draw (" + str(shift) "," + str(height) + ") -- (" + str(shift) ", 0) ;"
+	for shift, height in l.iteritems():
+		texStr += "\t\t\\draw (" + str(shift) + "," + str(height) + ") -- (" + str(shift) + ", 0) ;"
 
-	# need to insert here the way to call arguments so it says what splitting rules were used, probably from arguments when we implement that
-
-	texStr += "\t\\end{tikzpicture}\n\t\\caption{"
-	texStr += str(output)
-	texStr += "}\n\\end{figure}\n\n\\end{document}"
+	texStr += "\t\\end{tikzpicture}\n\t\\caption{" + caption + "}\n\\end{figure}\n\n\\end{document}"
 	return texStr
 
-def writeTex(str, fname):
+def strToFile(str, fname):
 	f = open(fname, 'w')
 	f.write(str)
 	f.close()
 
-
-### BEGIN SCRIPT
+# ## BEGIN SCRIPT
 
 
 test_rangeList()
@@ -81,5 +78,5 @@ for i in xrange(input("number of splits? ")):
 	j = input("coupling constant for split #" + str(i + 1) + "? ")
 	n.append((h, j))
 
-print(prepTex(makeSplittingList(n)))
+print(prepTex(makeSplittingList(n), str(n)))
 
