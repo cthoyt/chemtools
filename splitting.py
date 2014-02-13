@@ -1,5 +1,8 @@
 import itertools
 import string
+from subprocess import call
+import sys
+
 
 def makeSplittingList(l):
     # input list of doubles as (number hydrogens, coupling constant in hz)
@@ -78,6 +81,13 @@ def readSplitsFromFile(fname):
 test_rangeList()
 test_makeSplittingList()
 
-n = readSplitsFromFile(input("filename? "))
-print(prepTex(makeSplittingList(n), str(n)))
-
+if len(sys.argv) == 3:
+	n = readSplitsFromFile(sys.argv[1])
+	strToFile(prepTex(makeSplittingList(n), str(n)), sys.argv[2])
+#	if call(["which", "pdflatex"]):
+	call(["pdflatex", sys.argv[2]])
+#	else:
+#		print("TeX missing!")
+else:
+	n = getSplitsFromUser()
+	strToFile(prepTex(makeSplittingList(n), str(n)), input("output file name?"))
