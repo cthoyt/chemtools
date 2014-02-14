@@ -53,8 +53,8 @@ def prepareSplittingTex(tree):
 	scaleY = 1
 	frac_split = .75
 
+	resonanceCommands = []	
 """
-	resonanceCommands = []
 	bottom = yOffset - (len(tree) - 1 + frac_split) * scaleY
 	pattern = extractPatternFromTree(tree)
 	for x in pattern:
