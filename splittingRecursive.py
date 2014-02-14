@@ -46,59 +46,69 @@ def prepareResonanceTex(patternTree):
 	pass
 
 def prepareSplittingTex(tree):
-    #in relative units
-	height = 1100
-	width = 850
-	verticalPadding = 5
-	horizontalPadding = 5
-    
-    
-    	#todo: calculate these based on height/width/padding 
-	scaleX = 1
-	levelScaleY = 1
-	frac_split = .7
-    
+    # in relative units
+	width = 0
+	verticalPadding = 0
+	horizontalPadding = 0
+	start_height = verticalPadding
+	middle = width / 2
+
+    	# todo: calculate these based on height/width/padding
+
+
+	scaleX = 1  # (middle - 2 * horizontalPadding) / tree[len(tree) - 1][0][0]
+	scaleY = 1
+	frac_split = .5
+
 	solidCommands = []
 	dottedCommands = []
-    
-	coordinateNumber = 1
-	for level in xrange(1, len(tree) - 1):
+	tree[0][0] = (middle, start_height)
+	for level in xrange(1, len(tree)):
 		for i in xrange(len(tree[level])):
-            
+
+			currentXY = (middle + tree[level][i][0] * scaleX, verticalPadding + level * scaleY)
+			currentXDropY = (currentXY[0], currentXY[1] + frac_split * scaleY)
+
 			parent_index = tree[level][i][1]
-			relativeX = tree[level][i][0]
-			cartesianCoordinate = (relativeX * scaleX, level * levelScaleY)
-            
-			tree[level][i] = (coordinateNumber, parent_index, cartesianCoordinate)
-			
-			a = tree[level - 1][parent_index][0]
-			b = (a[0], a[1] + frac_split * levelScaleY)
-			c = tree[level - 1][parent_index][0]
-			
-			#if last line (level = len(tree) - 1, draw longer tail
-			if level == len(tree):
-				b = (a[0], a[1] + levelScaleY
-			
-			#draw solid line from (x,y) = tree[level - 1][parent_index][0] to (x, y + frac_split * levelScaleY)
-			solidCommands.append("\draw " + str(a) + " -- " + str(b) + " ;")
-			
-			#draw dotted line from (x, y + frac_split * levelScaleY) if (x,y) = tree[level - 1][parent_index][0] i.e. 
-			##coordinate number to current coordinate number
-			dottedCommands.append("\draw [dotted] " + str(b) " -- " + str(c) + " ;")
-			
-			coordinateNumber += 1
-			
-			
-	solids = string.join(solidLineCommands, "\n")
-	dotted = string.join(solidLineCommands, "\n")
-	
-	return points + "\n\n" + solids + "\n\n" + dotted
+			parentXY = tree[level - 1][parent_index]
 
-def prepareTexHeader():
-    pass
+			# if last line (level = len(tree) - 1, draw longer tail
+			# if level == len(tree):
+			# 	b = (a[0], a[1] + levelScaleY
 
-def prepareTexFooter():
-    pass
+			solidCommands.append("\t\t\\draw " + str(currentXY) + " -- " + str(currentXDropY) + " ;")
+			dottedCommands.append("\t\t\\draw [dotted] " + str(parentXY) + " -- " + str(currentXDropY) + " ;")
+
+			tree[level][i] = currentXY
+
+	solids = string.join(solidCommands, "\n")
+	dotted = string.join(dottedCommands, "\n")
+
+	return solids + "\n\n" + dotted + "\n"
+
+def prepareTexHeader(width = 0.3, height = 0.3):
+	return "\\documentclass[]{article}\n\n\\usepackage{tikz}\n\\usepackage[margin=1in]{geometry}\n\n\\begin{document}\n\n\\begin{figure}\n\t\\centering\n\t\\begin{tikzpicture}[x=" + str(width) + "cm, y=" + str(height) + "]\n"
+
+
+def prepareTexFooter(caption = "splitting tree"):
+    return "\t\\end{tikzpicture}\n\t\\caption{" + str(caption) + "}\n\\end{figure}\n\n\\end{document}"
+
+def getTex(l):
+	tree = splitter(l)
+	return prepareTexHeader() + prepareSplittingTex(tree) + prepareTexFooter(l)
+
+def strToFile(str, fname):
+	f = open(fname, 'w')
+	f.write(str)
+	f.close()
+
+def getSplitsFromUser():
+	return [(input("hydrogens on split #" + str(i + 1) + "? "), input("coupling constant for split #" + str(i + 1) + "? ")) for i in xrange(input("number of splits? "))]
+
+def readSplitsFromFile(fname):
+	with open(fname) as f:
+		return [(int(h), float(j)) for h, j in [string.split(line.strip(), ",") for line in f]]
+
 
 def testProcess():
 	test1 = ([(1, 5)], {-2.5: 1, 2.5: 1})
@@ -115,6 +125,18 @@ def testProcess():
 
 testProcess()
 
-tree = splitter([(1, 8), (1, 4), (1, 2)])
-print(tree)
-print(extractPatternFromTree(tree))
+
+
+# ## BEGIN SCRIPT
+
+if len(sys.argv) == 3:
+	l = readSplitsFromFile(sys.argv[1])
+	strToFile(getTex(l), sys.argv[2])
+	if subprocess.call(["which", "pdflatex"]) == 0:
+		subprocess.call(["pdflatex", sys.argv[2]])
+	else:
+		print "Missing pdflatex!\nNo pdf produced!\nRaw LaTeX output at:", sys.argv[2]
+
+else:
+	l = getSplitsFromUser()
+	strToFile(getTex(l), input("output file name? "))
