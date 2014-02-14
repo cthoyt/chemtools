@@ -54,12 +54,13 @@ def prepareSplittingTex(tree):
 	frac_split = .75
 
 	resonanceCommands = []	
-"""
+
 	bottom = yOffset - (len(tree) - 1 + frac_split) * scaleY
 	pattern = extractPatternFromTree(tree)
+	normalize = scaleY / max(pattern.itervalues())
 	for x in pattern:
-		resonanceCommands.append("\t\t\\draw " + str((x, bottom)) + " -- " + str((x, bottom + pattern[x])) + " ;")
-"""	
+		resonanceCommands.append("\t\t\\draw " + str((x, bottom)) + " -- " + str((x, bottom + normalize * pattern[x])) + " ;")
+
 
 	solidCommands = ["\t\t\\draw (0," + str(scaleY * frac_split) + ") -- (0,0) ;"]
 	dottedCommands = []
