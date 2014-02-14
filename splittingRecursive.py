@@ -15,7 +15,7 @@ def combinations(n, k):
 	return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
 
 def splitter(l):
-	l = sorted(l, key = lambda entry: entry[1])
+	l = sorted(l, key = lambda entry: entry[1])[::-1]
 
 	# tree[level][index] === (coordinate, parent index, relative height)
 	tree = [[(0, 0, 1)]]
@@ -31,8 +31,7 @@ def splitter(l):
 			start = tree[level][i][0] - h * j / 2.0
 			for k in xrange(h + 1):
 				tree[level + 1].append((start + k * j, i, combinations(h, k)))
-		# sort?
-		# sorted(tree[level + 1], key = lambda el: el[0])
+				
 	return tree
 
 def extractPatternFromTree(tree):
@@ -46,47 +45,46 @@ def prepareResonanceTex(patternTree):
 	pass
 
 def prepareSplittingTex(tree):
-    # in relative units
+	
 	width = 0
-	verticalPadding = 0
-	horizontalPadding = 0
-	start_height = verticalPadding
-	middle = width / 2
-
-    	# todo: calculate these based on height/width/padding
-
-
+	xOffset = width / 2
+	yOffset = 0
 	scaleX = 1  # (middle - 2 * horizontalPadding) / tree[len(tree) - 1][0][0]
 	scaleY = 1
-	frac_split = .5
+	frac_split = .75
 
-	solidCommands = []
+"""
+	resonanceCommands = []
+	bottom = yOffset - (len(tree) - 1 + frac_split) * scaleY
+	pattern = extractPatternFromTree(tree)
+	for x in pattern:
+		resonanceCommands.append("\t\t\\draw " + str((x, bottom)) + " -- " + str((x, bottom + pattern[x])) + " ;")
+"""	
+
+	solidCommands = ["\t\t\\draw (0," + str(scaleY * frac_split) + ") -- (0,0) ;"]
 	dottedCommands = []
-	tree[0][0] = (middle, start_height)
+	
+	tree[0][0] = (xOffset, yOffset * frac_split)
+	
 	for level in xrange(1, len(tree)):
 		for i in xrange(len(tree[level])):
 
-			currentXY = (middle + tree[level][i][0] * scaleX, verticalPadding + level * scaleY)
-			currentXDropY = (currentXY[0], currentXY[1] + frac_split * scaleY)
+			currentXY = (xOffset + tree[level][i][0] * scaleX, yOffset - level * scaleY)
+			currentXDropY = (currentXY[0], currentXY[1] - frac_split * scaleY)
 
 			parent_index = tree[level][i][1]
 			parentXY = tree[level - 1][parent_index]
 
-			# if last line (level = len(tree) - 1, draw longer tail
-			# if level == len(tree):
-			# 	b = (a[0], a[1] + levelScaleY
+			# if last line (level = len(tree) - 1, draw longer tail  if level == len(tree): b = (a[0], a[1] + levelScaleY
 
+			dottedCommands.append("\t\t\\draw [dotted] " + str(parentXY) + " -- " + str(currentXY) + " ;")
 			solidCommands.append("\t\t\\draw " + str(currentXY) + " -- " + str(currentXDropY) + " ;")
-			dottedCommands.append("\t\t\\draw [dotted] " + str(parentXY) + " -- " + str(currentXDropY) + " ;")
 
-			tree[level][i] = currentXY
+			tree[level][i] = currentXDropY
 
-	solids = string.join(solidCommands, "\n")
-	dotted = string.join(dottedCommands, "\n")
+	return string.join(solidCommands, "\n") + "\n\n" + string.join(dottedCommands, "\n") + "\n\n" + string.join(resonanceCommands, "\n") + "\n"
 
-	return solids + "\n\n" + dotted + "\n"
-
-def prepareTexHeader(width = 0.3, height = 0.3):
+def prepareTexHeader(width = 0.3, height = 150):
 	return "\\documentclass[]{article}\n\n\\usepackage{tikz}\n\\usepackage[margin=1in]{geometry}\n\n\\begin{document}\n\n\\begin{figure}\n\t\\centering\n\t\\begin{tikzpicture}[x=" + str(width) + "cm, y=" + str(height) + "]\n"
 
 
