@@ -82,6 +82,9 @@ def makeSVG(l):
 		h = 1.7 * el[2] / maxRel
 		svg += makeSvgLineString((x, highestY), (x, highestY - h), xScale, yScale)
 
+	svg += '<text x="15" y="' + str(highestY * yScale + 25) + '" fill="black">Splitting pattern of: ' + str(l) + '</text>'
+
+
 	return '<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg">\n' + svg + "</svg>"
 
 l = []
