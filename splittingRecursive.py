@@ -5,20 +5,8 @@ import string
 import subprocess
 import sys
 
-# utilities
-def rangeList(start, stop, step):
-	while start <= stop:
-		yield start
-		start += step
-
 def combinations(n, k):
 	return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
-
-def transformCoordinates(l, xScale, yScale, xOffset, yOffset):
-	return [transformCoordinate((x, y), xScale, yScale, xOffset, yOffset) for x, y in l]
-
-def transformCoordinate(p, xScale, yScale, xOffset, yOffset):
-	return (xOffset + xScale * p[0], yOffset + yScale * p[1])
 
 # i/o
 def getSplitsFromUser():
@@ -36,9 +24,9 @@ def strToFile(str, fname):
 def makeSvgLineString(p1, p2, xScale, yScale, dotted = False):
 	points = (xScale * p1[0], yScale * p1[1], xScale * p2[0] , yScale * p2[1])
 	if dotted:
-		return '\t<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="blue" stroke-width="2"/> \n' % points
+		return '\t<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="blue" stroke-width="1"/> \n' % points
 	else:
-		return '\t<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="black" stroke-width="2"/> \n' % points
+		return '\t<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="black" stroke-width="1"/> \n' % points
 
 def makeSVG(l):
 	l = sorted(l, key = lambda entry: entry[1])[::-1]
@@ -61,7 +49,7 @@ def makeSVG(l):
 	xOffset = max([el[0] for el in tree[len(tree) - 1]])
 
 	# key = (point,point), value = labels
-	tree[0][0] = (xOffset, 0)
+	tree[0][0] = ((xOffset, 0), 0 , 1)
 
 	xScale = 10
 	yScale = 100
@@ -75,18 +63,25 @@ def makeSVG(l):
 			currentXDropY = (currentXY[0], currentXY[1] + frac_split)
 
 			parent_index = tree[level][i][1]
-			parentXY = tree[level - 1][parent_index]
+			parentXY = tree[level - 1][parent_index][0]
 			parentXDropY = (parentXY[0], parentXY[1] + frac_split)
-
+			
 			svg += makeSvgLineString(currentXY, parentXDropY, xScale, yScale, True)
-			svg += makeSvgLineString(currentXY, currentXDropY, xScale, yScale)
+			
+			if not len(tree)-1 == level:
+				svg += makeSvgLineString(currentXY, currentXDropY, xScale, yScale)
 
-			tree[level][i] = currentXY
+			tree[level][i] = (currentXY, parent_index, tree[level][i][2])
 
-	# DRAW RESONSANCE HERE
-
-	highestY = tree[len(tree) - 1][0][1]
+	highestY = len(tree) - 1
 	range = highestY - level - frac_split
+	maxRel = max([el[2] for el in tree[len(tree)-1]])
+	norm = 2 * range / maxRel
+	
+	for el in tree[len(tree)-1]:
+		x = el[0][0] 
+		h = el[2] * norm
+		svg += makeSvgLineString((x, highestY), (x, highestY - h), xScale, yScale)
 
 	return '<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg">\n' + svg + "</svg>"
 
@@ -102,6 +97,5 @@ else:
 	fileName = input("file name? ")
 
 output = makeSVG(l)
-strToFile(output, fileName + ".txt")
-strToFile(output, fileName + ".svg")
+strToFile(output, fileName)
 
