@@ -8,7 +8,6 @@ import sys
 def combinations(n, k):
 	return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
 
-# i/o
 def getSplitsFromUser():
 	return [(input("hydrogens on split #" + str(i + 1) + "? "), input("coupling constant for split #" + str(i + 1) + "? ")) for i in xrange(input("number of splits? "))]
 
@@ -24,7 +23,7 @@ def strToFile(str, fname):
 def makeSvgLineString(p1, p2, xScale, yScale, dotted = False):
 	points = (xScale * p1[0], yScale * p1[1], xScale * p2[0] , yScale * p2[1])
 	if dotted:
-		return '\t<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="blue" stroke-width="1"/> \n' % points
+		return '\t<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="gray" stroke-width="1"/> \n' % points
 	else:
 		return '\t<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="black" stroke-width="1"/> \n' % points
 
@@ -65,27 +64,26 @@ def makeSVG(l):
 			parent_index = tree[level][i][1]
 			parentXY = tree[level - 1][parent_index][0]
 			parentXDropY = (parentXY[0], parentXY[1] + frac_split)
-			
+
 			svg += makeSvgLineString(currentXY, parentXDropY, xScale, yScale, True)
-			
-			if not len(tree)-1 == level:
+
+			if not len(tree) - 1 == level:
 				svg += makeSvgLineString(currentXY, currentXDropY, xScale, yScale)
+			else:
+				svg += makeSvgLineString(currentXY, (currentXY[0], currentXY[1] + .2), xScale, yScale)
 
 			tree[level][i] = (currentXY, parent_index, tree[level][i][2])
 
-	highestY = len(tree) - 1
-	range = highestY - level - frac_split
-	maxRel = max([el[2] for el in tree[len(tree)-1]])
-	norm = 2 * range / maxRel
-	
-	for el in tree[len(tree)-1]:
-		x = el[0][0] 
-		h = el[2] * norm
+	highestY = len(tree) + 1
+	maxRel = max([el[2] for el in tree[len(tree) - 1]])
+
+	for el in tree[len(tree) - 1]:
+		x = el[0][0]
+		h = 1.7 * el[2] / maxRel
 		svg += makeSvgLineString((x, highestY), (x, highestY - h), xScale, yScale)
 
 	return '<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg">\n' + svg + "</svg>"
 
-# ## BEGIN SCRIPT
 l = []
 fileName = ""
 
