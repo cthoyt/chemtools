@@ -5,7 +5,7 @@ import string
 import subprocess
 import sys
 
-
+# utilities
 def rangeList(start, stop, step):
 	while start <= stop:
 		yield start
@@ -14,93 +14,13 @@ def rangeList(start, stop, step):
 def combinations(n, k):
 	return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
 
-def splitter(l):
-	l = sorted(l, key = lambda entry: entry[1])[::-1]
+def transformCoordinates(l, xScale, yScale, xOffset, yOffset):
+	return [transformCoordinate((x, y), xScale, yScale, xOffset, yOffset) for x, y in l]
 
-	# tree[level][index] === (coordinate, parent index, relative height)
-	tree = [[(0, 0, 1)]]
+def transformCoordinate(p, xScale, yScale, xOffset, yOffset):
+	return (xOffset + xScale * p[0], yOffset + yScale * p[1])
 
-	for level in xrange(len(l)):
-
-		tree.append([])
-		h = l[level][0]
-		j = l[level][1]
-
-		for i in xrange(len(tree[level])):
-			# shift-width
-			start = tree[level][i][0] - h * j / 2.0
-			for k in xrange(h + 1):
-				tree[level + 1].append((start + k * j, i, combinations(h, k)))
-				
-	return tree
-
-def extractPatternFromTree(tree):
-	for level in xrange(1, len(tree) - 1):
-		for i in xrange(len(tree[level])):
-			parent = tree[level][i][1]
-			tree[level][i] = (tree[level][i][0], tree[level][i][1], tree[level][i][2] * tree[level - 1][parent][2])
-	return {key:value for key, drop, value in tree[len(tree) - 1]}
-
-def prepareResonanceTex(patternTree):
-	pass
-
-def prepareSplittingTex(tree):
-	
-	width = 0
-	xOffset = width / 2
-	yOffset = 0
-	scaleX = 1  # (middle - 2 * horizontalPadding) / tree[len(tree) - 1][0][0]
-	scaleY = 1
-	frac_split = .75
-
-	resonanceCommands = []	
-
-	bottom = yOffset - (len(tree) - 1 + frac_split) * scaleY
-	pattern = extractPatternFromTree(tree)
-	normalize = scaleY / max(pattern.itervalues())
-	for x in pattern:
-		resonanceCommands.append("\t\t\\draw " + str((x, bottom)) + " -- " + str((x, bottom + normalize * pattern[x])) + " ;")
-
-
-	solidCommands = ["\t\t\\draw (0," + str(scaleY * frac_split) + ") -- (0,0) ;"]
-	dottedCommands = []
-	
-	tree[0][0] = (xOffset, yOffset * frac_split)
-	
-	for level in xrange(1, len(tree)):
-		for i in xrange(len(tree[level])):
-
-			currentXY = (xOffset + tree[level][i][0] * scaleX, yOffset - level * scaleY)
-			currentXDropY = (currentXY[0], currentXY[1] - frac_split * scaleY)
-
-			parent_index = tree[level][i][1]
-			parentXY = tree[level - 1][parent_index]
-
-			# if last line (level = len(tree) - 1, draw longer tail  if level == len(tree): b = (a[0], a[1] + levelScaleY
-
-			dottedCommands.append("\t\t\\draw [dotted] " + str(parentXY) + " -- " + str(currentXY) + " ;")
-			solidCommands.append("\t\t\\draw " + str(currentXY) + " -- " + str(currentXDropY) + " ;")
-
-			tree[level][i] = currentXDropY
-
-	return string.join(solidCommands, "\n") + "\n\n" + string.join(dottedCommands, "\n") + "\n\n" + string.join(resonanceCommands, "\n") + "\n"
-
-def prepareTexHeader(width = 0.3, height = 150):
-	return "\\documentclass[]{article}\n\n\\usepackage{tikz}\n\\usepackage[margin=1in]{geometry}\n\n\\begin{document}\n\n\\begin{figure}\n\t\\centering\n\t\\begin{tikzpicture}[x=" + str(width) + "cm, y=" + str(height) + "]\n"
-
-
-def prepareTexFooter(caption = "splitting tree"):
-    return "\t\\end{tikzpicture}\n\t\\caption{" + str(caption) + "}\n\\end{figure}\n\n\\end{document}"
-
-def getTex(l):
-	tree = splitter(l)
-	return prepareTexHeader() + prepareSplittingTex(tree) + prepareTexFooter(l)
-
-def strToFile(str, fname):
-	f = open(fname, 'w')
-	f.write(str)
-	f.close()
-
+# i/o
 def getSplitsFromUser():
 	return [(input("hydrogens on split #" + str(i + 1) + "? "), input("coupling constant for split #" + str(i + 1) + "? ")) for i in xrange(input("number of splits? "))]
 
@@ -108,34 +28,80 @@ def readSplitsFromFile(fname):
 	with open(fname) as f:
 		return [(int(h), float(j)) for h, j in [string.split(line.strip(), ",") for line in f]]
 
+def strToFile(str, fname):
+	f = open(fname, 'w')
+	f.write(str)
+	f.close()
 
-def testProcess():
-	test1 = ([(1, 5)], {-2.5: 1, 2.5: 1})
-	test2 = ([(1, 4)], {-2: 1, 2: 1})
-	test3 = ([(2, 4)], {-4: 1, 0: 2, 4: 1})
-	test4 = ([(2, 5)], {-5: 1, 0: 2, 5: 1})
-	test5 = ([(3, 4)], {-6: 1, -2: 3, 2: 3, 6: 1})
-	test6 = ([(3, 5)], {-7.5: 1, -2.5: 3, 2.5: 3, 7.5: 1})
-	test7 = ([(1, 6), (1, 2)], {-4: 1, -2: 1, 2: 1, 4: 1})
-	test8 = ([(1, 8), (1, 4), (1, 2)], {key: 1 for key in rangeList(-7.0, 7.0, 2.0)})
-	data = [test1, test2, test3, test4, test5, test6, test7, test8]
-	for test, result in data:
- 		assert extractPatternFromTree(splitter(test)) == result
+def makeSvgLineString(p1, p2, xScale, yScale, dotted = False):
+	points = (xScale * p1[0], yScale * p1[1], xScale * p2[0] , yScale * p2[1])
+	if dotted:
+		return '\t<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="blue" stroke-width="2"/> \n' % points
+	else:
+		return '\t<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="black" stroke-width="2"/> \n' % points
 
-testProcess()
+def makeSVG(l):
+	l = sorted(l, key = lambda entry: entry[1])[::-1]
 
+	# tree[level][index] === (coordinate, parent index, relative height)
+	tree = [[(0, 0, 1)]]
 
+	# load up the tree
+	for level in xrange(len(l)):
+		tree.append([])
+		h = l[level][0]
+		j = l[level][1]
+		for i in xrange(len(tree[level])):
+			start = tree[level][i][0] - h * j / 2.0
+			for k in xrange(h + 1):
+				tree[level + 1].append((start + k * j, i, tree[level][i][2] * combinations(h, k)))
+
+	frac_split = .6
+
+	xOffset = max([el[0] for el in tree[len(tree) - 1]])
+
+	# key = (point,point), value = labels
+	tree[0][0] = (xOffset, 0)
+
+	xScale = 10
+	yScale = 100
+
+	svg = makeSvgLineString((xOffset, 0), (xOffset, frac_split), xScale, yScale)
+
+	for level in xrange(1, len(tree)):
+		for i in xrange(len(tree[level])):
+
+			currentXY = (xOffset + tree[level][i][0], level)
+			currentXDropY = (currentXY[0], currentXY[1] + frac_split)
+
+			parent_index = tree[level][i][1]
+			parentXY = tree[level - 1][parent_index]
+			parentXDropY = (parentXY[0], parentXY[1] + frac_split)
+
+			svg += makeSvgLineString(currentXY, parentXDropY, xScale, yScale, True)
+			svg += makeSvgLineString(currentXY, currentXDropY, xScale, yScale)
+
+			tree[level][i] = currentXY
+
+	# DRAW RESONSANCE HERE
+
+	highestY = tree[len(tree) - 1][0][1]
+	range = highestY - level - frac_split
+
+	return '<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg">\n' + svg + "</svg>"
 
 # ## BEGIN SCRIPT
+l = []
+fileName = ""
 
 if len(sys.argv) == 3:
 	l = readSplitsFromFile(sys.argv[1])
-	strToFile(getTex(l), sys.argv[2])
-	if subprocess.call(["which", "pdflatex"]) == 0:
-		subprocess.call(["pdflatex", sys.argv[2]])
-	else:
-		print "Missing pdflatex!\nNo pdf produced!\nRaw LaTeX output at:", sys.argv[2]
-
+	fileName = sys.argv[2]
 else:
 	l = getSplitsFromUser()
-	strToFile(getTex(l), input("output file name? "))
+	fileName = input("file name? ")
+
+output = makeSVG(l)
+strToFile(output, fileName + ".txt")
+strToFile(output, fileName + ".svg")
+
