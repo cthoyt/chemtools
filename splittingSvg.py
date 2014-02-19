@@ -9,7 +9,7 @@ def combinations(n, k):
 	return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
 
 def getSplitsFromUser():
-	return [(input("hydrogens on split #" + str(i + 1) + "? "), input("coupling constant for split #" + str(i + 1) + "? ")) for i in xrange(input("number of splits? "))]
+	return [(input("hydrogens on split #" + str(i + 1) + "? "), input("coupling constant for split #" + str(i + 1) + "? ")) for i in xrange(input("number of types of magnetically eq. hydrogens? "))]
 
 def readSplitsFromFile(fname):
 	with open(fname) as f:
@@ -95,7 +95,7 @@ if len(sys.argv) == 3:
 	fileName = sys.argv[2]
 else:
 	l = getSplitsFromUser()
-	fileName = input("file name? ")
+	fileName = input("file name (no extension)? ") + ".svg"
 
 output = makeSVG(l)
 strToFile(output, fileName)
