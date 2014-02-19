@@ -95,7 +95,7 @@ if len(sys.argv) == 3:
 	fileName = sys.argv[2]
 else:
 	l = getSplitsFromUser()
-	fileName = input("file name (no extension)? ") + ".svg"
+	fileName = input("file name in quotes (no extension)? ") + ".svg"
 
 output = makeSVG(l)
 strToFile(output, fileName)
