@@ -1,0 +1,38 @@
+<html>
+<head>
+<script type="text/javascript">
+
+function makeBody() {	
+
+	var path = location.href.split("?")
+	if (path.length == 2)  {
+		var params = path[1].split("=")
+		if(params.length == 2) {
+			changeView(params[1])
+			changeView(params[1].split("%0D%0A"))
+
+			for(var str in params[1].split("%0D%0A"))
+			{
+				alert(str.split("%2C"))
+			}
+		}
+		
+	}
+}
+
+function changeView(str) {
+	document.getElementById("place").innerHTML = str
+}
+
+</script>
+</head>
+
+<body onload="makeBody()">
+	<div id="form">
+	<form action="" method="get">
+	<textarea name="input" rows="4" cols="50" onclick="this.innerHTML=''">On each line, write: #hydrogens, coupling constant</textarea>
+	<br /><input type="submit" value="Submit"/>
+	</div>
+	<div id="place"></div>
+</body>
+</html>
