@@ -41,11 +41,13 @@ function makeTree(l) {
 	for (var pos = 0; pos < tree[tree.length - 1].length; pos++)
 		xOffset = Math.max(xOffset, tree[tree.length - 1][pos][0])
 
+	xOffset += 2
+		
 	// # key = (point,point), value = labels
 	tree[0][0] = [ [ xOffset, 0 ], 0, 1 ]
 
-	var xScale = 20
-	var yScale = 200
+	var xScale = 25
+	var yScale = 150
 
 	var svg = makeSvgLineString(xOffset, 0, xOffset, frac_split, xScale, yScale, false)
 
