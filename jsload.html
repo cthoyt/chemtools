@@ -4,11 +4,11 @@
 </head>
 
 <body onload="makeBody()">
-	<div id="form">
 	<form action="" method="get">
-	<textarea name="input" rows="4" cols="50" onclick="this.innerHTML=''">On each line, write: #hydrogens SPACE coupling constant</textarea>
-	<br /><input type="submit" value="Submit"/>
-	</div>
+		<input type="text" name="input" onclick="this.value=''"
+			value="#h,J;#h,J; and so on" /> <br /> <input type="submit"
+			value="Submit" />
+	</form>
 	<div id="place"></div>
 </body>
 </html>

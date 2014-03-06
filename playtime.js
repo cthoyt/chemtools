@@ -9,6 +9,18 @@ function combinations(n, k) {
 	return factorial(n) / (factorial(n - k) * factorial(k));
 }
 
+function makeSvgLineString(x1, y1, x2, y2, xScale, yScale, dotted) {
+	var a = x1 * xScale;
+	var b = y1 * yScale;
+	var c = x2 * xScale;
+	var d = y2 * yScale;
+	if (dotted) {
+		return '\t<line x1="' + a + '" y1="' + b + '" x2="' + c + '" y2="' + d + '" stroke="gray" stroke-width="1"/> \n';
+	} else {
+		return '\t<line x1="' + a + '" y1="' + b + '" x2="' + c + '" y2="' + d + '" stroke="black" stroke-width="1"/> \n';
+	}
+}
+
 function makeTree(l) {
 
 	var tree = [ [ [ 0, 0, 1 ] ] ];
@@ -22,71 +34,75 @@ function makeTree(l) {
 				tree[level + 1].push([ start + k * j, i, tree[level][i][2] * combinations(h, k) ]);
 		}
 	}
-	return tree;
-}
 
-function makeSvgLine(x1, y1, x2, y2, dotted) {
-	if (dotted) {
-		return '\t<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="gray" stroke-width="1"/> \n';
-	} else {
-		return '\t<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="black" stroke-width="1"/> \n';
-	}
-}
-
-function nextPart() {
 	var frac_split = .6
 
-	xOffset = max([el[0] for el in Iterator(tree[tree.length - 1])])
+	var xOffset = 0;
+	for (var pos = 0; pos < tree[tree.length - 1].length; pos++)
+		xOffset = Math.max(xOffset, tree[tree.length - 1][pos][0])
 
-	//# key = (point,point), value = labels
-	tree[0][0] = ((xOffset, 0), 0 , 1)
+	// # key = (point,point), value = labels
+	tree[0][0] = [ [ xOffset, 0 ], 0, 1 ]
 
-	xScale = 10
-	yScale = 100
+	var xScale = 20
+	var yScale = 200
 
-	svg = makeSvgLineString((xOffset, 0), (xOffset, frac_split), xScale, yScale)
+	var svg = makeSvgLineString(xOffset, 0, xOffset, frac_split, xScale, yScale, false)
 
-	for level in xrange(1, len(tree)):
-		for i in xrange(len(tree[level])):
+	for (var level = 1; level < tree.length; level++) {
+		for (var i = 0; i < tree[level].length; i++) {
 
-			currentXY = (xOffset + tree[level][i][0], level)
-			currentXDropY = (currentXY[0], currentXY[1] + frac_split)
+			var currentXY = [ xOffset + tree[level][i][0], level ]
+			var currentXDropY = [ currentXY[0], currentXY[1] + frac_split ]
 
-			parent_index = tree[level][i][1]
-			parentXY = tree[level - 1][parent_index][0]
-			parentXDropY = (parentXY[0], parentXY[1] + frac_split)
+			var parent_index = tree[level][i][1]
+			var parentXY = tree[level - 1][parent_index][0]
+			var parentXDropY = [ parentXY[0], parentXY[1] + frac_split ]
 
-			svg += makeSvgLineString(currentXY, parentXDropY, xScale, yScale, True)
+			svg += makeSvgLineString(currentXY[0], currentXY[1], parentXDropY[0], parentXDropY[1], xScale, yScale, true)
 
-			if not len(tree) - 1 == level:
-				svg += makeSvgLineString(currentXY, currentXDropY, xScale, yScale)
-			else:
-				svg += makeSvgLineString(currentXY, (currentXY[0], currentXY[1] + .2), xScale, yScale)
+			if (tree.length - 1 != level) {
+				svg += makeSvgLineString(currentXY[0], currentXY[1], currentXDropY[0], currentXDropY[1], xScale, yScale, false)
+			} else {
+				svg += makeSvgLineString(currentXY[0], currentXY[1], currentXY[0], currentXY[1] + .2, xScale, yScale, false)
+			}
+			tree[level][i] = [ currentXY, parent_index, tree[level][i][2] ]
+		}
+	}
 
-			tree[level][i] = (currentXY, parent_index, tree[level][i][2])
+	var highestY = tree.length + 1
+
+	var maxRel = 0
+	for (var index = 0; index < tree[tree.length - 1].length; index++)
+		maxRel = Math.max(maxRel, tree[tree.length - 1][index][2])
+
+	for (var el = 0; el < tree[tree.length - 1].length; el++) {
+		var element = tree[tree.length - 1][el]
+		x = element[0][0]
+		h = 1.7 * element[2] / maxRel
+		svg += makeSvgLineString(x, highestY, x, highestY - h, xScale, yScale, false)
+	}
+
+	svg += '<text x="15" y="' + highestY * yScale + 25 + '" fill="black">Splitting pattern of: ' + l + '</text>'
+
+	return '<svg xmlns="http://www.w3.org/2000/svg">\n' + svg + "</svg>"
 }
 
 function makeBody() {
 
 	var newLine = "%0D%0A"
 	var path = location.href.split("?")
+	var input = []
 	if (path.length == 2) {
 		var params = path[1].split("=")
-		if (params.length == 2) {
-			changeView(params[1]);
-			changeView(params[1].split(newLine)[0].split("+")[0]);
+		var unprocessed = params[1].split("%3B")
 
-			for ( var str in params[1].split(newLine)) {
-				alert(str.split("+")[0])
-			}
+		for (var index = 0; index < unprocessed.length; index++) {
+			input.push(unprocessed[index].split("%2C"))
 		}
+
 	}
-	var tree = makeTree([ [ 3, 6 ], [ 2, 7 ] ])
-	changeView(tree[0]);
-	alert()
-	changeView(tree[1])
-	alert()
-	changeView(tree[2][0])
+	changeView(makeTree(input))
 }
 
 function changeView(str) {
