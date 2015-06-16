@@ -1,0 +1,147 @@
+<html>
+<head>
+<script type="text/javascript">
+	function factorial(n) {
+		if (n < 2) {
+			return 1;
+		}
+		return n * factorial(n - 1);
+	}
+
+	function combinations(n, k) {
+		return factorial(n) / (factorial(n - k) * factorial(k));
+	}
+
+	function makeSvgLineString(x1, y1, x2, y2, xScale, yScale, dotted) {
+		var a = x1 * xScale;
+		var b = y1 * yScale;
+		var c = x2 * xScale;
+		var d = y2 * yScale;
+		if (dotted) {
+			return '\t<line x1="' + a + '" y1="' + b + '" x2="' + c + '" y2="' + d + '" stroke="gray" stroke-width="1"/> \n';
+		} else {
+			return '\t<line x1="' + a + '" y1="' + b + '" x2="' + c + '" y2="' + d + '" stroke="black" stroke-width="1"/> \n';
+		}
+	}
+
+	function makeTree(l) {
+
+		l.sort(function(a, b) {
+			return  b[1] - a[1]
+		})
+
+		var tree = [ [ [ 0, 0, 1 ] ] ];
+		for (var level = 0; level < l.length; level++) {
+			tree.push([]);
+			var h = l[level][0];
+			var j = l[level][1];
+			for (var i = 0; i < tree[level].length; i++) {
+				var start = tree[level][i][0] - h * j / 2.0;
+				for (var k = 0; k <= h; k++)
+					tree[level + 1].push([ start + k * j, i, tree[level][i][2] * combinations(h, k) ]);
+			}
+		}
+
+		//parameters
+		var frac_split = .6
+		var xScale = 25
+		var yScale = 150
+
+		var xOffset = 0;
+		for (var pos = 0; pos < tree[tree.length - 1].length; pos++)
+			xOffset = Math.max(xOffset, tree[tree.length - 1][pos][0])
+
+		xOffset += 2
+
+		// # key = (point,point), value = labels
+		tree[0][0] = [ [ xOffset, 0 ], 0, 1 ]
+
+		var svg = makeSvgLineString(xOffset, 0, xOffset, frac_split, xScale, yScale, false)
+
+		for (var level = 1; level < tree.length; level++) {
+			for (var i = 0; i < tree[level].length; i++) {
+
+				var currentXY = [ xOffset + tree[level][i][0], level ]
+				var currentXDropY = [ currentXY[0], currentXY[1] + frac_split ]
+
+				var parent_index = tree[level][i][1]
+				var parentXY = tree[level - 1][parent_index][0]
+				var parentXDropY = [ parentXY[0], parentXY[1] + frac_split ]
+
+				svg += makeSvgLineString(currentXY[0], currentXY[1], parentXDropY[0], parentXDropY[1], xScale, yScale, true)
+
+				if (tree.length - 1 != level) {
+					svg += makeSvgLineString(currentXY[0], currentXY[1], currentXDropY[0], currentXDropY[1], xScale, yScale, false)
+				} else {
+					svg += makeSvgLineString(currentXY[0], currentXY[1], currentXY[0], currentXY[1] + .2, xScale, yScale, false)
+				}
+				tree[level][i] = [ currentXY, parent_index, tree[level][i][2] ]
+			}
+		}
+
+		var highestY = tree.length + 1
+
+		var maxRel = 0
+		for (var index = 0; index < tree[tree.length - 1].length; index++)
+			maxRel = Math.max(maxRel, tree[tree.length - 1][index][2])
+
+		for (var el = 0; el < tree[tree.length - 1].length; el++) {
+			var element = tree[tree.length - 1][el]
+			x = element[0][0]
+			h = 1.7 * element[2] / maxRel
+			svg += makeSvgLineString(x, highestY, x, highestY - h, xScale, yScale, false)
+		}
+
+		svg += '<text x="15" y="' + (highestY * yScale + 25) + '" fill="black">Splitting pattern of: ' + l + '</text>'
+
+		return '<svg width="2600" height="2600" xmlns="http://www.w3.org/2000/svg">\n' + svg + "</svg>"
+	}
+</script>
+<style type="text/css">
+body {
+	
+}
+
+#container {
+	margin: 0 auto;
+	text-align: center;
+}
+
+#container svg {
+	text-align: center;
+	display: block;
+	margin: auto;
+}
+</style>
+</head>
+
+<body>
+	<header>
+		<p>I made this tool for my Spec-ID class. Feel free to use or modify it however you want!</p>
+		<p>Instructions: Type #hydrogens, then space, then coupling constant, then space (repeat) (ex. 2 6 2 6 3 7)</p>
+		<p>Note: you may have to zoom out to see the whole diagram.</p>
+		<form action="" method="get">
+			<input type="text" name="splits" />
+			<input type="submit" value="Submit" />
+		</form>
+	</header>
+	<div id="place">
+		<script type="text/javascript">
+			var decodedpath = decodeURIComponent(location.href)
+			var path = decodedpath.split("?")
+			var input = []
+			if (path.length == 2) {
+				var params = path[1].split("=")
+				if (params.length > 1) {
+					var unprocessed = params[1].split(/\D/)
+
+					for (var index = 0; index < unprocessed.length; index += 2)
+						input.push([ unprocessed[index], unprocessed[index + 1] ])
+
+					document.write(makeTree(input))
+				}
+			}
+		</script>
+	</div>
+</body>
+</html>

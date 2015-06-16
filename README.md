@@ -3,4 +3,9 @@ chemtools
 
 Fun tools for chemistry classes
 
-starting with a script for calculating first-order nmr splitting
+
+##Orbitals
+D-Orbital stuff for bioinorganic chemistry
+
+##Splitting Tree
+NMR splitting tree generator

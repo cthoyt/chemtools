@@ -5,6 +5,11 @@ import string
 import subprocess
 import sys
 
+def reduce(lam, l):
+
+
+
+
 def makeSplittingList(l):
     # input list of doubles as (number hydrogens, coupling constant in hz)
     # output list of doubles as (relative coordinate, peak height)
